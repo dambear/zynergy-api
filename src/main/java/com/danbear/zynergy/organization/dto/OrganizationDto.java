@@ -1,7 +1,9 @@
 package com.danbear.zynergy.organization.dto;
 
+import com.danbear.zynergy.administrator.Administrator;
 import com.danbear.zynergy.organization.Organization;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,7 +16,7 @@ import lombok.Data;
 @Data
 @Builder
 public class OrganizationDto {
-  private Long orgId;
+  private Long organizationId;
   
   @NotEmpty @Column(unique = true)
   @Email(message = "Organization email must be a valid email address")
@@ -38,6 +40,9 @@ public class OrganizationDto {
   
 
   private String orgDatabaseUrl;
+  
+  @JsonIgnoreProperties("organization")
+  private Administrator administrator;
   
   @Enumerated(EnumType.STRING)
   private Organization.SubscriptionStatus subscriptionStatus;

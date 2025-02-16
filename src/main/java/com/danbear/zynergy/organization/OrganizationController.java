@@ -23,15 +23,38 @@ public class OrganizationController {
   
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<List<OrganizationDto>> getAllOrganizations() {
+  public ResponseEntity<ResponseObject> getAllOrganizations() {
     List<OrganizationDto> organizations = organizationService.findAllOrganizations();
-    return new ResponseEntity<>(organizations, HttpStatus.OK);
+    
+    ResponseObject responseObject = new ResponseObject();
+    
+    responseObject.setTimestamp(new Date());
+    responseObject.setStatus(HttpStatus.OK.value());
+    responseObject.setMessage("Organization Retrieved Successfully.");
+    responseObject.setData(organizations);
+    responseObject.setPath("/api/organization");
+    
+    if (organizations.isEmpty()) {
+      responseObject.setMessage("No Organization Found.");
+    }
+    
+    return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }
   
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<OrganizationDto> getOrganizationById(@PathVariable Long id) {
-    return ResponseEntity.ok(organizationService.findOrganizationById(id));
+  public ResponseEntity<ResponseObject> getOrganizationById(@PathVariable Long id) {
+    OrganizationDto organization = organizationService.findOrganizationById(id);
+    
+    ResponseObject responseObject = new ResponseObject();
+    
+    responseObject.setTimestamp(new Date());
+    responseObject.setStatus(HttpStatus.OK.value());
+    responseObject.setMessage("Organization Retrieved Successfully.");
+    responseObject.setData(organization);
+    responseObject.setPath("/api/organization/" + id);
+    
+    return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }
   
   @PostMapping
@@ -44,8 +67,9 @@ public class OrganizationController {
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.CREATED.value());
-    responseObject.setMessage("Organization Created Successfully");
+    responseObject.setMessage("Organization Created Successfully.");
     responseObject.setData(organization);
+    responseObject.setPath("/api/organization");
     
     return new ResponseEntity<>(responseObject, HttpStatus.CREATED);
   }
@@ -63,8 +87,9 @@ public class OrganizationController {
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Updated Successfully");
+    responseObject.setMessage("Organization Updated Successfully.");
     responseObject.setData(organization);
+    responseObject.setPath("/api/organization/" + id);
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }
@@ -80,7 +105,8 @@ public class OrganizationController {
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Deleted Successfully");
+    responseObject.setMessage("Organization Deleted Successfully.");
+    responseObject.setPath("/api/organization/" + id);
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }

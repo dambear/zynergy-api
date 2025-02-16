@@ -1,14 +1,14 @@
 package com.danbear.zynergy.administrator;
 
-import com.danbear.zynergy.organization.dto.OrganizationDto;
+import com.danbear.zynergy.administrator.dto.AdministratorDto;
 
 import java.util.List;
 
 
-public interface OrganizationService {
-  List<OrganizationDto> findAllOrganizations();
-  OrganizationDto findOrganizationById(Long id);
-  OrganizationDto createOrganization(OrganizationDto organizationDto);
-  OrganizationDto updateOrganization(OrganizationDto organizationDto, Long id);
-  void deleteOrganization(Long id);
+public interface AdministratorService {
+  List<AdministratorDto> findAllAdministrators();
+  AdministratorDto findAdministratorById(Long id);
+  AdministratorDto createAdministrator(AdministratorDto administratorDto);
+  AdministratorDto updateAdministrator(AdministratorDto administratorDto, Long id);
+  void deleteAdministrator(Long id);
 }

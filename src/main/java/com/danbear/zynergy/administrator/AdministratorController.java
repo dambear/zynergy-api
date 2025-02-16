@@ -1,7 +1,7 @@
 package com.danbear.zynergy.administrator;
 
 import com.danbear.zynergy.common.ResponseObject;
-import com.danbear.zynergy.organization.dto.OrganizationDto;
+import com.danbear.zynergy.administrator.dto.AdministratorDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,30 +11,30 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/organization")
-public class OrganizationController {
+@RequestMapping("/api/administrator")
+public class AdministratorController {
   
-  private final OrganizationService organizationService;
+  private final AdministratorService administratorService;
   
-  public OrganizationController(OrganizationService organizationService) {
-    this.organizationService = organizationService;
+  public AdministratorController(AdministratorService administratorService) {
+    this.administratorService = administratorService;
   }
   
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<ResponseObject> getAllOrganizations() {
-    List<OrganizationDto> organizations = organizationService.findAllOrganizations();
+    List<AdministratorDto> administrators = administratorService.findAllAdministrators();
     
     ResponseObject responseObject = new ResponseObject();
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Retrieved Successfully.");
-    responseObject.setData(organizations);
-    responseObject.setPath("/api/organization");
+    responseObject.setMessage("Administrator Retrieved Successfully.");
+    responseObject.setData(administrators);
+    responseObject.setPath("/api/administrator");
     
-    if (organizations.size() < 1) {
-      responseObject.setMessage("No Organization Found.");
+    if (administrators.isEmpty()) {
+      responseObject.setMessage("No Administrator Found.");
     }
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
@@ -42,70 +42,70 @@ public class OrganizationController {
   
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<ResponseObject> getOrganizationById(@PathVariable Long id) {
-    OrganizationDto organization = organizationService.findOrganizationById(id);
+  public ResponseEntity<ResponseObject> getAdministratorById(@PathVariable Long id) {
+    AdministratorDto administrator = administratorService.findAdministratorById(id);
     
     ResponseObject responseObject = new ResponseObject();
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Retrieved Successfully.");
-    responseObject.setData(organization);
-    responseObject.setPath("/api/organization/" + id);
+    responseObject.setMessage("Administrator Retrieved Successfully.");
+    responseObject.setData(administrator);
+    responseObject.setPath("/api/administrator/" + id);
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }
   
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public ResponseEntity<ResponseObject> createOrganization(@Valid @RequestBody OrganizationDto organizationDto) {
+  public ResponseEntity<ResponseObject> createAdministrator(@Valid @RequestBody AdministratorDto administratorDto) {
     
-    OrganizationDto organization = organizationService.createOrganization(organizationDto);
+    AdministratorDto administrator = administratorService.createAdministrator(administratorDto);
     
     ResponseObject responseObject = new ResponseObject();
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.CREATED.value());
-    responseObject.setMessage("Organization Created Successfully.");
-    responseObject.setData(organization);
-    responseObject.setPath("/api/organization");
+    responseObject.setMessage("Administrator Created Successfully.");
+    responseObject.setData(administrator);
+    responseObject.setPath("/api/administrator");
     
     return new ResponseEntity<>(responseObject, HttpStatus.CREATED);
   }
   
   @PutMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<ResponseObject> updateOrganization(
+  public ResponseEntity<ResponseObject> updateAdministrator(
       @Valid
-      @RequestBody OrganizationDto organizationDto,
+      @RequestBody AdministratorDto administratorDto,
       @PathVariable("id") Long id)
   {
-    OrganizationDto organization = organizationService.updateOrganization(organizationDto, id);
+    AdministratorDto administrator = administratorService.updateAdministrator(administratorDto, id);
     
     ResponseObject responseObject = new ResponseObject();
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Updated Successfully.");
-    responseObject.setData(organization);
-    responseObject.setPath("/api/organization/" + id);
+    responseObject.setMessage("Administrator Updated Successfully.");
+    responseObject.setData(administrator);
+    responseObject.setPath("/api/administrator/" + id);
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }
   
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<ResponseObject> deleteOrganization(
+  public ResponseEntity<ResponseObject> deleteAdministrator(
       @PathVariable("id") Long id)
   {
-    organizationService.deleteOrganization(id);
+    administratorService.deleteAdministrator(id);
     
     ResponseObject responseObject = new ResponseObject();
     
     responseObject.setTimestamp(new Date());
     responseObject.setStatus(HttpStatus.OK.value());
-    responseObject.setMessage("Organization Deleted Successfully.");
-    responseObject.setPath("/api/organization/" + id);
+    responseObject.setMessage("Administrator Deleted Successfully.");
+    responseObject.setPath("/api/administrator/" + id);
     
     return new ResponseEntity<>(responseObject, HttpStatus.OK);
   }

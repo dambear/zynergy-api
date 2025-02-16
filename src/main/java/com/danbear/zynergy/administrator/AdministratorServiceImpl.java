@@ -1,139 +1,149 @@
 package com.danbear.zynergy.administrator;
 
+import com.danbear.zynergy.administrator.dto.AdministratorDto;
+import com.danbear.zynergy.common.exception.BadRequestException;
+import com.danbear.zynergy.common.exception.NotFoundException;
 import com.danbear.zynergy.organization.Organization;
-import com.danbear.zynergy.organization.dto.OrganizationDto;
+import com.danbear.zynergy.organization.OrganizationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class OrganizationServiceImpl implements OrganizationService {
+public class AdministratorServiceImpl implements AdministratorService {
   
+  private final AdministratorRepository administratorRepository;
   private final OrganizationRepository organizationRepository;
   
-  public OrganizationServiceImpl(OrganizationRepository organizationRepository) {
+  public AdministratorServiceImpl(
+      AdministratorRepository administratorRepository, OrganizationRepository organizationRepository) {
+    this.administratorRepository = administratorRepository;
     this.organizationRepository = organizationRepository;
   }
   
-  public List<OrganizationDto> findAllOrganizations() {
-    List<Organization> organizations = organizationRepository.findAll();
-    return organizations.stream().map((organization) -> mapToDto(organization)).collect(Collectors.toList());
+  public List<AdministratorDto> findAllAdministrators() {
+    List<Administrator> administrators = administratorRepository.findAll();
+    return administrators.stream().map(AdministratorServiceImpl::mapToDto).collect(Collectors.toList());
   }
   
-  public OrganizationDto findOrganizationById(Long id) {
-    Organization organization = organizationRepository.findById(id).orElseThrow(
-        () -> new OrganizationNotFoundException(
-            "No organization found with organization_id: " + id
-                + ". Please verify the organization_id and try again."
+  public AdministratorDto findAdministratorById(Long id) {
+    Administrator administrator = administratorRepository.findById(id).orElseThrow(
+        () -> new NotFoundException(
+            "No administrator found with administrator_id: " + id
+                + ". Please verify the administrator_id and try again."
         ));
-    return mapToDto(organization);
+    return mapToDto(administrator);
   }
   
-  public OrganizationDto createOrganization(OrganizationDto organizationDto) {
+  public AdministratorDto createAdministrator(AdministratorDto administratorDto) {
     
     //Check if email already exist
-    if (organizationRepository.existsByOrgEmail(organizationDto.getOrgEmail())) {
-      throw new OrganizationUniqueEmailException(
-          "The organization email " + organizationDto.getOrgEmail()
-              + " is already in use. Please use a different email address.");
+    if (administratorRepository.existsByEmail(administratorDto.getEmail())) {
+      throw new BadRequestException(
+          "The administrator email '" + administratorDto.getEmail()
+              + "' is already in use. Please use a different email address.");
     }
     
-    Organization organization = new Organization();
+    Long organization_id = administratorDto.getOrganization().getOrganizationId();
     
-    organization.setOrgEmail(organizationDto.getOrgEmail());
-    organization.setOrgName(organizationDto.getOrgName());
-    organization.setOrgContactPerson(organizationDto.getOrgContactPerson());
-    organization.setOrgAddress(organizationDto.getOrgAddress());
-    organization.setOrgPhoneNumber(organizationDto.getOrgPhoneNumber());
-    organization.setOrgMobileNumber(organizationDto.getOrgMobileNumber());
-    organization.setOrgLogo(organizationDto.getOrgLogo());
-    organization.setOrgDatabaseUrl(organizationDto.getOrgDatabaseUrl());
-    organization.setSubscriptionStatus(organizationDto.getSubscriptionStatus());
-    
-    
-    Organization savedOrganization = organizationRepository.save(organization);
-    
-    return mapToDto(savedOrganization);
-  }
-  
-  
-  public OrganizationDto updateOrganization(OrganizationDto organizationDto, Long id) {
-    
-    Organization organization = organizationRepository.findById(id).orElseThrow(
-        () -> new OrganizationNotFoundException(
-            "No organization found with organization_id: " + id
+    Organization organization = organizationRepository.findById(organization_id).orElseThrow(
+        () -> new NotFoundException(
+            "No organization found with organization_id: " + organization_id
                 + ". Please verify the organization_id and try again."
         ));
     
+    if(organization.getAdministrator() != null &&
+        organization.getAdministrator().getAdministratorId() != null) {
+      throw new BadRequestException(
+          "The organization '" + organization.getOrgName() + "' already has an administrator. "
+              + "Only one administrator can be assigned per organization. Please verify the "
+              + "organization details before assigning a new one."
+      );
+    }
+    
+    
+    Administrator administrator = new Administrator();
+    
+    return getAdministratorDto(administratorDto, organization, administrator);
+  }
+  
+  
+  public AdministratorDto updateAdministrator(AdministratorDto administratorDto, Long id) {
+    
+    Administrator administrator = administratorRepository.findById(id).orElseThrow(
+        () -> new NotFoundException(
+            "No administrator found with administrator_id: " + id
+                + ". Please verify the administrator_id and try again."
+        ));
     
     //Check if email already exist
-    if (!organization.getOrgEmail().equals(organizationDto.getOrgEmail())
-        && organizationRepository.existsByOrgEmail(organizationDto.getOrgEmail())) {
-      throw new OrganizationUniqueEmailException(
-          "The organization email " + organizationDto.getOrgEmail()
-              + " is already in use. Please use a different email address.");
+    if (!administrator.getEmail().equals(administratorDto.getEmail())
+        && administratorRepository.existsByEmail(administratorDto.getEmail())) {
+      throw new BadRequestException(
+          "The administrator email '" + administratorDto.getEmail()
+              + "' is already in use. Please use a different email address.");
     }
     
-    organization.setOrgEmail(organizationDto.getOrgEmail());
-    organization.setOrgName(organizationDto.getOrgName());
-    organization.setOrgContactPerson(organizationDto.getOrgContactPerson());
-    organization.setOrgAddress(organizationDto.getOrgAddress());
-    organization.setOrgPhoneNumber(organizationDto.getOrgPhoneNumber());
-    organization.setOrgMobileNumber(organizationDto.getOrgMobileNumber());
-    organization.setOrgLogo(organizationDto.getOrgLogo());
-    organization.setOrgDatabaseUrl(organizationDto.getOrgDatabaseUrl());
+    Long organization_id = administratorDto.getOrganization().getOrganizationId();
     
-    organization.setSubscriptionStatus(organizationDto.getSubscriptionStatus());
-    
-    Organization updatedOrganization = organizationRepository.save(organization);
-    
-    return mapToDto(updatedOrganization);
-  }
-  
-  public void deleteOrganization(Long id) {
-    Organization organization = organizationRepository.findById(id).orElseThrow(
-        () -> new OrganizationNotFoundException(
-            "No organization found with organization_id: " + id
+    Organization organization = organizationRepository.findById(organization_id).orElseThrow(
+        () -> new RuntimeException(
+            "No organization found with organization_id: " + organization_id
                 + ". Please verify the organization_id and try again."
         ));
     
-    organizationRepository.delete(organization);
+    return getAdministratorDto(administratorDto, organization, administrator);
   }
   
-  // >>>>>>>>  Mappers
-  public static Organization mapToEntity(OrganizationDto organization) {
-    Organization organizationDto = Organization.builder()
-        .orgId(organization.getOrgId())
-        .orgEmail(organization.getOrgEmail())
-        .orgName(organization.getOrgName())
-        .orgContactPerson(organization.getOrgContactPerson())
-        .orgAddress(organization.getOrgAddress())
-        .orgPhoneNumber(organization.getOrgPhoneNumber())
-        .orgMobileNumber(organization.getOrgMobileNumber())
-        .orgLogo(organization.getOrgLogo())
-        .orgDatabaseUrl(organization.getOrgDatabaseUrl())
-        .subscriptionStatus(organization.getSubscriptionStatus())
-        .build();
+  public void deleteAdministrator(Long id) {
+    Administrator administrator = administratorRepository.findById(id).orElseThrow(
+        () -> new NotFoundException(
+            "No administrator found with administrator_id: " + id
+                + ". Please verify the administrator_id and try again."
+        ));
+    
+    Long organization_id = administrator.getOrganization().getOrganizationId();
+    
+    if (organization_id != null) {
+      Organization organization = organizationRepository.findById(organization_id).orElseThrow(
+          () -> new NotFoundException(
+              "No organization found with organization_id: " + id
+                  + ". Please verify the organization_id and try again."
+          ));
+      // make organization null
+      organization.setAdministrator(null);
+      organizationRepository.save(organization);
+      
+    }
     
     
-    
-    return organizationDto;
+    administratorRepository.delete(administrator);
   }
   
-  public static OrganizationDto mapToDto(Organization organization) {
-    OrganizationDto organizationDto = OrganizationDto.builder()
-        .orgId(organization.getOrgId())
-        .orgEmail(organization.getOrgEmail())
-        .orgName(organization.getOrgName())
-        .orgContactPerson(organization.getOrgContactPerson())
-        .orgAddress(organization.getOrgAddress())
-        .orgPhoneNumber(organization.getOrgPhoneNumber())
-        .orgMobileNumber(organization.getOrgMobileNumber())
-        .orgLogo(organization.getOrgLogo())
-        .orgDatabaseUrl(organization.getOrgDatabaseUrl())
-        .subscriptionStatus(organization.getSubscriptionStatus())
+  // >>>>>>  Use in Create and Update  <<<<<<
+  private AdministratorDto getAdministratorDto(AdministratorDto administratorDto, Organization organization, Administrator administrator) {
+    
+    administrator.setName(administratorDto.getName());
+    administrator.setEmail(administratorDto.getEmail());
+    administrator.setPassword(administratorDto.getPassword());
+    administrator.setOrganization(organization);
+    administrator.setAdministratorType(administratorDto.getAdministratorType());
+    
+    Administrator savedAdministrator = administratorRepository.save(administrator);
+    
+    return mapToDto(savedAdministrator);
+  }
+  
+  // >>>>>>  Mapper to Dto  <<<<<<
+  public static AdministratorDto mapToDto(Administrator administrator) {
+    return AdministratorDto.builder()
+        .administratorId(administrator.getAdministratorId())
+        .name(administrator.getName())
+        .email(administrator.getEmail())
+        .password(administrator.getPassword())
+        .organization(administrator.getOrganization())
+        .administratorType(administrator.getAdministratorType())
         .build();
-    return organizationDto;
   }
 }

@@ -1,5 +1,6 @@
 package com.danbear.zynergy.organization;
 
+import com.danbear.zynergy.administrator.Administrator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ public class Organization {
   
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long orgId;
+  private Long organizationId;
   
   @NotEmpty @Column(unique = true)
   private String orgEmail;
@@ -43,10 +44,12 @@ public class Organization {
   
   private String orgDatabaseUrl;
   
+  @OneToOne(mappedBy = "organization", cascade = CascadeType.ALL)
+  private Administrator administrator;
+  
   // Subscription Information
   @Enumerated(EnumType.STRING)
   private SubscriptionStatus subscriptionStatus;
-  
   
   // Enum for Subscription Status
   public enum SubscriptionStatus {
